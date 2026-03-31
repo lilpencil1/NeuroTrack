@@ -1,1 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>NeuroTrack</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 
+<body>
+  <div class="phone">
+
+    <!-- HOME -->
+    <div id="home">
+      <h1>NeuroTrack</h1>
+      <p class="subtitle">Track your cognitive & physical wellness</p>
+
+      <div class="card status-card">
+        <p>Today's Status</p>
+        <span class="badge" id="statusBadge">No data yet</span>
+
+        <p id="latestSummary" class="summary-text">
+          Complete a check to see your latest result.
+        </p>
+
+        <button onclick="startReactionTest()">
+          Reaction Test
+        </button>
+
+        <button onclick="showScreen('walking')">
+          Walking Stability Test
+        </button>
+
+        <button class="secondary-btn" onclick="resetBaseline()">
+          Reset Demo Data
+        </button>
+      </div>
+
+      <div class="card">
+        <h3>Reaction History</h3>
+        <p id="historyStats">No results recorded yet.</p>
+        <div id="historyList"></div>
+      </div>
+
+      <div class="card">
+        <h3>Walking History</h3>
+        <p id="walkingHistoryStats">No walking tests recorded yet.</p>
+        <div id="walkingHistoryList"></div>
+      </div>
+    </div>
+
+    <!-- REACTION -->
+    <div id="reaction" class="full-screen" style="display:none;">
+      <p id="reactionText">Wait...</p>
+    </div>
+
+    <!-- WALKING -->
+    <div id="walking" style="display:none;">
+      <div class="card">
+        <h2>Walking Stability Test</h2>
+        <p id="walkingInstruction">
+          Put your phone in your pocket and walk for 10 seconds.
+        </p>
+
+        <button onclick="startWalkingTest()">
+          Start Walking Test
+        </button>
+
+        <button class="secondary-btn" onclick="goHome()">
+          Back Home
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result" style="display:none;">
+      <div class="card">
+        <h2 id="resultText"></h2>
+        <button onclick="goHome()">Back Home</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
