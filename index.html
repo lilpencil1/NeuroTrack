@@ -5,11 +5,9 @@
   <title>NeuroTrack</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
   <div class="phone">
 
-    <!-- HOME -->
     <div id="home">
       <h1>NeuroTrack</h1>
       <p class="subtitle">Track your cognitive & physical wellness</p>
@@ -22,17 +20,8 @@
           Complete a check to see your latest result.
         </p>
 
-        <button onclick="startReactionTest()">
-          Reaction Test
-        </button>
-
-        <button onclick="showScreen('walking')">
-          Walking Stability Test
-        </button>
-
-        <button class="secondary-btn" onclick="resetBaseline()">
-          Reset Demo Data
-        </button>
+        <button onclick="startDailyCheck()">Start Daily Check</button>
+        <button class="secondary-btn" onclick="resetBaseline()">Reset Demo Data</button>
       </div>
 
       <div class="card">
@@ -48,33 +37,41 @@
       </div>
     </div>
 
-    <!-- REACTION -->
+    <div id="checkin" style="display:none;">
+      <div class="card">
+        <h2>Daily Check-In</h2>
+
+        <label for="fatigueSlider">Fatigue Level</label>
+        <p class="slider-value"><span id="fatigueValue">5</span>/10</p>
+        <input type="range" id="fatigueSlider" min="1" max="10" value="5">
+
+        <label for="balanceSlider">Balance Confidence</label>
+        <p class="slider-value"><span id="balanceValue">5</span>/10</p>
+        <input type="range" id="balanceSlider" min="1" max="10" value="5">
+
+        <button onclick="continueToReaction()">Continue to Reaction Test</button>
+        <button class="secondary-btn" onclick="goHome()">Back Home</button>
+      </div>
+    </div>
+
     <div id="reaction" class="full-screen" style="display:none;">
       <p id="reactionText">Wait...</p>
     </div>
 
-    <!-- WALKING -->
     <div id="walking" style="display:none;">
       <div class="card">
         <h2>Walking Stability Test</h2>
-        <p id="walkingInstruction">
-          Put your phone in your pocket and walk for 10 seconds.
-        </p>
+        <p id="walkingInstruction">Put your phone in your pocket and walk for 10 seconds.</p>
 
-        <button onclick="startWalkingTest()">
-          Start Walking Test
-        </button>
-
-        <button class="secondary-btn" onclick="goHome()">
-          Back Home
-        </button>
+        <button onclick="startWalkingTest()">Start Walking Test</button>
+        <button class="secondary-btn" onclick="goHome()">Back Home</button>
       </div>
     </div>
 
-    <!-- RESULT -->
     <div id="result" style="display:none;">
       <div class="card">
-        <h2 id="resultText"></h2>
+        <h2>Daily Check Results</h2>
+        <p id="resultText"></p>
         <button onclick="goHome()">Back Home</button>
       </div>
     </div>
