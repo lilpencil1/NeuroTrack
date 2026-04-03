@@ -109,6 +109,7 @@ button:hover {
   font-size: 14px;
   line-height: 1.4;
   margin: 0 0 18px 0;
+  white-space: pre-line;
 }
 
 .full-screen {
@@ -125,15 +126,16 @@ button:hover {
 }
 
 #result {
-  text-align: center;
-  padding-top: 40px;
+  text-align: left;
+  padding-top: 20px;
 }
 
 #resultText {
   margin-bottom: 20px;
-  font-size: 22px;
+  font-size: 18px;
   color: #0f172a;
   white-space: pre-line;
+  line-height: 1.5;
 }
 
 #historyStats,
@@ -153,4 +155,21 @@ button:hover {
   box-shadow: 0 3px 8px rgba(15, 23, 42, 0.05);
   font-size: 14px;
   color: #0f172a;
+}
+
+label {
+  display: block;
+  margin-top: 16px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+.slider-value {
+  margin: 0 0 8px 0;
+  color: #475569;
 }
