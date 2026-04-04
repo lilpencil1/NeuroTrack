@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NeuroTrack</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -24,17 +25,19 @@
         <button class="secondary-btn" onclick="resetBaseline()">Reset Demo Data</button>
       </div>
 
-      <div class="card">
-        <h3>Reaction History</h3>
-        <p id="historyStats">No results recorded yet.</p>
-        <div id="historyList"></div>
-      </div>
+<div class="card">
+  <h3>Reaction History</h3>
+  <p id="historyStats">No results recorded yet.</p>
+  <canvas id="reactionChart" width="320" height="140"></canvas>
+  <div id="historyList"></div>
+</div>
 
-      <div class="card">
-        <h3>Walking History</h3>
-        <p id="walkingHistoryStats">No walking tests recorded yet.</p>
-        <div id="walkingHistoryList"></div>
-      </div>
+<div class="card">
+  <h3>Walking History</h3>
+  <p id="walkingHistoryStats">No walking tests recorded yet.</p>
+  <canvas id="walkingChart" width="320" height="140"></canvas>
+  <div id="walkingHistoryList"></div>
+</div>
     </div>
 
     <div id="checkin" style="display:none;">
