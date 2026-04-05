@@ -246,6 +246,18 @@ function showCombinedResults() {
     recommendation = "Baseline is still being built.";
   }
 
+  if (reactionStatus === "Alert" && currentCheck.fatigue >= 7) {
+  recommendation += "\nPerformance change may be influenced by fatigue."; 
+  }
+  
+  if (currentCheck.fatigue >= 7 && overallStatus !== "Alert") {
+  recommendation += "\nHigh fatigue reported — consider rest.";
+}
+
+if (currentCheck.balanceConfidence <= 3 && walkingStatus !== "Alert") {
+  recommendation += "\nLow balance confidence — monitor stability closely.";
+}
+
   document.getElementById("resultText").innerText =
     "Overall Status: " + overallStatus + "\n" +
     "Reaction: " + reactionStatus + "\n" +
@@ -253,6 +265,7 @@ function showCombinedResults() {
     "Fatigue: " + currentCheck.fatigue + "/10\n\n" +
     recommendation;
 
+    
   showScreen("result");
 }
 
@@ -548,14 +561,18 @@ function updateWalkingHistory() {
 }
 document.addEventListener("DOMContentLoaded", function () {
   const reactionScreen = document.getElementById("reaction");
+  const fatigueSlider = document.getElementById("fatigueSlider");
+  const balanceSlider = document.getElementById("balanceSlider");
+
+  fatigueSlider.addEventListener("input", updateSliderValues);
+  balanceSlider.addEventListener("input", updateSliderValues);
 
   reactionScreen.addEventListener("click", function () {
-    // clicked too early
     if (startTime === null) {
       const text = document.getElementById("reactionText");
       reactionScreen.style.background = "red";
       text.innerText = "Too early! Restarting...";
-      
+
       if (reactionTimeout !== null) {
         clearTimeout(reactionTimeout);
         reactionTimeout = null;
@@ -576,6 +593,7 @@ document.addEventListener("DOMContentLoaded", function () {
     showScreen("walking");
   });
 
+  updateSliderValues();
   updateHomeStatus();
   updateReactionHistory();
   updateWalkingHistory();
