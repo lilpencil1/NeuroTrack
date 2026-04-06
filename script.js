@@ -559,6 +559,181 @@ function updateWalkingHistory() {
     list.appendChild(item);
   });
 }
+
+function downloadHistoryReportPDF() {
+  const reactionData = getReactionData();
+  const walkingData = getWalkingData();
+
+  const reactionBaseline = getReactionBaseline(5);
+  const walkingBaseline = getWalkingBaseline(5);
+
+  let reactionRows = "";
+  if (reactionData.length === 0) {
+    reactionRows = "<tr><td colspan='3'>No reaction history available.</td></tr>";
+  } else {
+    reactionData.forEach((value, index) => {
+      let status = "Building baseline";
+
+      if (reactionBaseline !== null) {
+        const percentDiff = ((value - reactionBaseline) / reactionBaseline) * 100;
+        if (percentDiff <= 10) {
+          status = "Stable";
+        } else if (percentDiff <= 20) {
+          status = "Slight change";
+        } else {
+          status = "Alert";
+        }
+      }
+
+      reactionRows +=
+        "<tr>" +
+          "<td>" + (index + 1) + "</td>" +
+          "<td>" + value + " ms</td>" +
+          "<td>" + status + "</td>" +
+        "</tr>";
+    });
+  }
+
+  let walkingRows = "";
+  if (walkingData.length === 0) {
+    walkingRows = "<tr><td colspan='3'>No walking history available.</td></tr>";
+  } else {
+    walkingData.forEach((value, index) => {
+      let status = "Building baseline";
+
+      if (walkingBaseline !== null) {
+        const percentDiff = ((walkingBaseline - value) / walkingBaseline) * 100;
+        if (percentDiff <= 10) {
+          status = "Stable";
+        } else if (percentDiff <= 20) {
+          status = "Slight change";
+        } else {
+          status = "Alert";
+        }
+      }
+
+      walkingRows +=
+        "<tr>" +
+          "<td>" + (index + 1) + "</td>" +
+          "<td>" + value + "/100</td>" +
+          "<td>" + status + "</td>" +
+        "</tr>";
+    });
+  }
+
+  const today = new Date().toLocaleDateString();
+
+  const reportHTML = `
+    <html>
+    <head>
+      <title>NeuroTrack History Report</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          padding: 32px;
+          color: #111827;
+        }
+
+        h1, h2 {
+          margin-bottom: 8px;
+        }
+
+        p {
+          margin-top: 4px;
+          margin-bottom: 16px;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 28px;
+        }
+
+        th, td {
+          border: 1px solid #d1d5db;
+          padding: 10px;
+          text-align: left;
+        }
+
+        th {
+          background: #f3f4f6;
+        }
+
+        .section {
+          margin-top: 24px;
+        }
+
+        .note {
+          margin-top: 30px;
+          font-size: 14px;
+          color: #4b5563;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>NeuroTrack History Report</h1>
+      <p><strong>Date:</strong> ${today}</p>
+
+      <div class="section">
+        <h2>Summary</h2>
+        <p><strong>Reaction Baseline:</strong> ${
+          reactionBaseline !== null ? Math.round(reactionBaseline) + " ms" : "Building baseline"
+        }</p>
+        <p><strong>Walking Baseline:</strong> ${
+          walkingBaseline !== null ? Math.round(walkingBaseline) + "/100" : "Building baseline"
+        }</p>
+      </div>
+
+      <div class="section">
+        <h2>Reaction History</h2>
+        <table>
+          <tr>
+            <th>Test</th>
+            <th>Reaction Time</th>
+            <th>Status</th>
+          </tr>
+          ${reactionRows}
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>Walking History</h2>
+        <table>
+          <tr>
+            <th>Test</th>
+            <th>Walking Score</th>
+            <th>Status</th>
+          </tr>
+          ${walkingRows}
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>Latest Self-Report</h2>
+        <p><strong>Fatigue:</strong> ${
+          currentCheck.fatigue !== null ? currentCheck.fatigue + "/10" : "N/A"
+        }</p>
+        <p><strong>Balance Confidence:</strong> ${
+          currentCheck.balanceConfidence !== null ? currentCheck.balanceConfidence + "/10" : "N/A"
+        }</p>
+      </div>
+
+      <p class="note">
+        Note: This tool provides self-monitoring insights and is not a medical diagnosis.
+      </p>
+    </body>
+    </html>
+  `;
+
+  const reportWindow = window.open("", "_blank");
+  reportWindow.document.open();
+  reportWindow.document.write(reportHTML);
+  reportWindow.document.close();
+
+  reportWindow.focus();
+  reportWindow.print();
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   const reactionScreen = document.getElementById("reaction");
   const fatigueSlider = document.getElementById("fatigueSlider");
@@ -598,3 +773,4 @@ document.addEventListener("DOMContentLoaded", function () {
   updateReactionHistory();
   updateWalkingHistory();
 });
+
