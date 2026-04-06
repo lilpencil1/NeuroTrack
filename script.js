@@ -329,7 +329,7 @@ function updateHomeStatus() {
   summary.innerText = reactionText + "\n" + walkingText;
 }
 
-function drawLineChart(canvasId, data, color, baseline = null, yLabel = "Value") {
+function drawLineChart(canvasId, data, color, baseline = null, yLabel = "Value", higherIsWorse = true) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
@@ -443,8 +443,21 @@ function drawLineChart(canvasId, data, color, baseline = null, yLabel = "Value")
     const x = getX(index);
     const y = getY(value);
 
-    ctx.fillStyle = index === data.length - 1 ? "#ef4444" : color;
-    ctx.beginPath();
+if (index === data.length - 1 && baseline !== null) {
+  const value = data[index];
+
+  let isBad = false;
+
+  if (higherIsWorse) {
+    isBad = value > baseline;
+  } else {
+    isBad = value < baseline;
+  }
+
+  ctx.fillStyle = isBad ? "#ef4444" : "#10b981"; // red or green based on above or below basline
+} else {
+  ctx.fillStyle = color;
+}    ctx.beginPath();
     ctx.arc(x, y, index === data.length - 1 ? 5 : 3.5, 0, Math.PI * 2);
     ctx.fill();
   });
@@ -492,8 +505,7 @@ function updateReactionHistory() {
 
   stats.innerText += "\n" + insight;
 
-  drawLineChart("reactionChart", data, "#0d9488", baseline, "Reaction Time");
-
+  drawLineChart("reactionChart", data, "#0d9488", baseline, "Reaction Time", true);
   list.innerHTML = "";
   const recent = [...data].reverse().slice(0, 3);
 
@@ -547,8 +559,7 @@ function updateWalkingHistory() {
 
   stats.innerText += "\n" + insight;
 
-  drawLineChart("walkingChart", data, "#7c3aed", baseline, "Walking Score");
-
+  drawLineChart("walkingChart", data, "#7c3aed", baseline, "Walking Score", false);
   list.innerHTML = "";
   const recent = [...data].reverse();
 
