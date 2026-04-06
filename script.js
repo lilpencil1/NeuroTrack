@@ -561,7 +561,7 @@ function updateWalkingHistory() {
 
   drawLineChart("walkingChart", data, "#7c3aed", baseline, "Walking Score", false);
   list.innerHTML = "";
-  const recent = [...data].reverse();
+  const recent = [...data].reverse().slice(0,3);
 
   recent.forEach((value, index) => {
     const item = document.createElement("div");
