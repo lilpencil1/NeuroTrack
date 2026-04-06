@@ -526,7 +526,7 @@ function updateWalkingHistory() {
   if (data.length === 0) {
     stats.innerText = "No walking tests recorded yet.";
     list.innerHTML = "";
-    drawLineChart("walkingChart", [], "#7c3aed", null, "Walking Score");
+    drawLineChart("walkingChart", [], "#7c3aed", null, "Walking Score", false);
     return;
   }
 
