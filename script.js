@@ -329,7 +329,7 @@ function updateHomeStatus() {
   summary.innerText = reactionText + "\n" + walkingText;
 }
 
-function drawLineChart(canvasId, data, color, baseline = null, yLabel = "Value", higherIsWorse = true) {
+function drawLineChart(canvasId, data, color, baseline = null, yLabel = "Value") {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
@@ -443,21 +443,8 @@ function drawLineChart(canvasId, data, color, baseline = null, yLabel = "Value",
     const x = getX(index);
     const y = getY(value);
 
-if (index === data.length - 1 && baseline !== null) {
-  const value = data[index];
-
-  let isBad = false;
-
-  if (higherIsWorse) {
-    isBad = value > baseline;
-  } else {
-    isBad = value < baseline;
-  }
-
-  ctx.fillStyle = isBad ? "#ef4444" : "#10b981"; // red or green based on above or below basline
-} else {
-  ctx.fillStyle = color;
-}    ctx.beginPath();
+    ctx.fillStyle = index === data.length - 1 ? "#ef4444" : color;
+    ctx.beginPath();
     ctx.arc(x, y, index === data.length - 1 ? 5 : 3.5, 0, Math.PI * 2);
     ctx.fill();
   });
@@ -480,11 +467,12 @@ function updateReactionHistory() {
   const worst = Math.max(...data);
   const baseline = getReactionBaseline(5);
 
-  stats.innerText =
-    "Total tests: " + data.length + "\n" +
-    "Average: " + Math.round(avg) + " ms\n" +
-    "Best: " + best + " ms\n" +
-    "Worst: " + worst + " ms";
+stats.innerText =
+  "Total tests: " + data.length + "\n" +
+  "Average: " + Math.round(avg) + " ms\n" +
+  "Baseline: " + (baseline !== null ? Math.round(baseline) + " ms" : "Building") + "\n" +
+  "Best: " + best + " ms\n" +
+  "Worst: " + worst + " ms";
 
   let insight = "";
 
@@ -505,7 +493,8 @@ function updateReactionHistory() {
 
   stats.innerText += "\n" + insight;
 
-  drawLineChart("reactionChart", data, "#0d9488", baseline, "Reaction Time", true);
+  drawLineChart("reactionChart", data, "#0d9488", baseline, "Reaction Time");
+
   list.innerHTML = "";
   const recent = [...data].reverse().slice(0, 3);
 
@@ -526,7 +515,7 @@ function updateWalkingHistory() {
   if (data.length === 0) {
     stats.innerText = "No walking tests recorded yet.";
     list.innerHTML = "";
-    drawLineChart("walkingChart", [], "#7c3aed", null, "Walking Score", false);
+    drawLineChart("walkingChart", [], "#7c3aed", null, "Walking Score");
     return;
   }
 
@@ -535,10 +524,11 @@ function updateWalkingHistory() {
   const worst = Math.min(...data);
 
   stats.innerText =
-    "Total tests: " + data.length + "\n" +
-    "Average: " + Math.round(avg) + "/100\n" +
-    "Best: " + best + "/100\n" +
-    "Lowest: " + worst + "/100";
+  "Total tests: " + data.length + "\n" +
+  "Average: " + Math.round(avg) + "/100\n" +
+  "Baseline: " + (baseline !== null ? Math.round(baseline) + "/100" : "Building") + "\n" +
+  "Best: " + best + "/100\n" +
+  "Lowest: " + worst + "/100";
 
   let insight = "";
 
@@ -559,9 +549,10 @@ function updateWalkingHistory() {
 
   stats.innerText += "\n" + insight;
 
-  drawLineChart("walkingChart", data, "#7c3aed", baseline, "Walking Score", false);
+  drawLineChart("walkingChart", data, "#7c3aed", baseline, "Walking Score");
+
   list.innerHTML = "";
-  const recent = [...data].reverse().slice(0,3);
+  const recent = [...data].reverse();
 
   recent.forEach((value, index) => {
     const item = document.createElement("div");
