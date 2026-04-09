@@ -74,6 +74,59 @@ function getWalkingBaseline(windowSize = 5) {
   if (recent.length < 3) return null;
   return recent.reduce((a, b) => a + b, 0) / recent.length;
 }
+function getReactionPercentDiff(value, baseline) {
+  return ((value - baseline) / baseline) * 100;
+}
+
+function getWalkingPercentDiff(value, baseline) {
+  return ((baseline - value) / baseline) * 100;
+}
+
+function countRecentReactionDeviations(days = 3, windowSize = 5, threshold = 10) {
+  const data = getReactionData();
+  if (data.length < windowSize + days - 1) return 0;
+
+  let count = 0;
+
+  for (let i = data.length - days; i < data.length; i++) {
+    const priorData = data.slice(0, i);
+    const recent = priorData.slice(-windowSize);
+
+    if (recent.length < 3) continue;
+
+    const baseline = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const percentDiff = getReactionPercentDiff(data[i], baseline);
+
+    if (percentDiff > threshold) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function countRecentWalkingDeviations(days = 3, windowSize = 5, threshold = 10) {
+  const data = getWalkingData();
+  if (data.length < windowSize + days - 1) return 0;
+
+  let count = 0;
+
+  for (let i = data.length - days; i < data.length; i++) {
+    const priorData = data.slice(0, i);
+    const recent = priorData.slice(-windowSize);
+
+    if (recent.length < 3) continue;
+
+    const baseline = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const percentDiff = getWalkingPercentDiff(data[i], baseline);
+
+    if (percentDiff > threshold) {
+      count++;
+    }
+  }
+
+  return count;
+}
 
 function startDailyCheck() {
   currentCheck = {
@@ -205,7 +258,10 @@ function getReactionStatus(reactionTime) {
   const baseline = getReactionBaseline(5);
   if (baseline === null) return "Building baseline";
 
-  const percentDiff = ((reactionTime - baseline) / baseline) * 100;
+  const percentDiff = getReactionPercentDiff(reactionTime, baseline);
+  const recentBadDays = countRecentReactionDeviations(3, 5, 10);
+
+  if (recentBadDays >= 3) return "Alert";
   if (percentDiff <= 10) return "Stable";
   if (percentDiff <= 20) return "Slight change";
   return "Alert";
@@ -215,7 +271,10 @@ function getWalkingStatus(score) {
   const baseline = getWalkingBaseline(5);
   if (baseline === null) return "Building baseline";
 
-  const percentDiff = ((baseline - score) / baseline) * 100;
+  const percentDiff = getWalkingPercentDiff(score, baseline);
+  const recentBadDays = countRecentWalkingDeviations(3, 5, 10);
+
+  if (recentBadDays >= 3) return "Alert";
   if (percentDiff <= 10) return "Stable";
   if (percentDiff <= 20) return "Slight change";
   return "Alert";
@@ -234,6 +293,9 @@ function showCombinedResults() {
   const walkingStatus = getWalkingStatus(currentCheck.walkingScore);
   const overallStatus = getOverallStatus(reactionStatus, walkingStatus);
 
+  const reactionStreak = countRecentReactionDeviations(3, 5, 10);
+  const walkingStreak = countRecentWalkingDeviations(3, 5, 10);
+
   let recommendation = "";
 
   if (overallStatus === "Alert") {
@@ -247,25 +309,29 @@ function showCombinedResults() {
   }
 
   if (reactionStatus === "Alert" && currentCheck.fatigue >= 7) {
-  recommendation += "\nPerformance change may be influenced by fatigue."; 
+    recommendation += "\nPerformance change may be influenced by fatigue.";
   }
-  
-  if (currentCheck.fatigue >= 7 && overallStatus !== "Alert") {
-  recommendation += "\nHigh fatigue reported — consider rest.";
-}
 
-if (currentCheck.balanceConfidence <= 3 && walkingStatus !== "Alert") {
-  recommendation += "\nLow balance confidence — monitor stability closely.";
-}
+  if (currentCheck.fatigue >= 7 && overallStatus !== "Alert") {
+    recommendation += "\nHigh fatigue reported — consider rest.";
+  }
+
+  if (currentCheck.balanceConfidence <= 3 && walkingStatus !== "Alert") {
+    recommendation += "\nLow balance confidence — monitor stability closely.";
+  }
+
+  if (reactionStreak >= 3 || walkingStreak >= 3) {
+    recommendation += "\nMulti-day deviation detected over recent tests.";
+  }
 
   document.getElementById("resultText").innerText =
     "Overall Status: " + overallStatus + "\n" +
     "Reaction: " + reactionStatus + "\n" +
     "Walking: " + walkingStatus + "\n" +
-    "Fatigue: " + currentCheck.fatigue + "/10\n\n" +
+    "Fatigue: " + currentCheck.fatigue + "/10\n" +
+    "Balance Confidence: " + currentCheck.balanceConfidence + "/10\n\n" +
     recommendation;
 
-    
   showScreen("result");
 }
 
@@ -467,20 +533,23 @@ function updateReactionHistory() {
   const worst = Math.max(...data);
   const baseline = getReactionBaseline(5);
 
-stats.innerText =
-  "Total tests: " + data.length + "\n" +
-  "Average: " + Math.round(avg) + " ms\n" +
-  "Baseline: " + (baseline !== null ? Math.round(baseline) + " ms" : "Building") + "\n" +
-  "Best: " + best + " ms\n" +
-  "Worst: " + worst + " ms";
+  stats.innerText =
+    "Total tests: " + data.length + "\n" +
+    "Average: " + Math.round(avg) + " ms\n" +
+    "Baseline: " + (baseline !== null ? Math.round(baseline) + " ms" : "Building") + "\n" +
+    "Best: " + best + " ms\n" +
+    "Worst: " + worst + " ms";
 
   let insight = "";
+  const recentBadDays = countRecentReactionDeviations(3, 5, 10);
 
   if (baseline !== null) {
     const latest = data[data.length - 1];
-    const percentDiff = ((latest - baseline) / baseline) * 100;
+    const percentDiff = getReactionPercentDiff(latest, baseline);
 
-    if (percentDiff <= 10) {
+    if (recentBadDays >= 3) {
+      insight = "Status: Alert (multi-day change)";
+    } else if (percentDiff <= 10) {
       insight = "Status: Stable";
     } else if (percentDiff <= 20) {
       insight = "Status: Slight change";
@@ -524,19 +593,22 @@ function updateWalkingHistory() {
   const worst = Math.min(...data);
 
   stats.innerText =
-  "Total tests: " + data.length + "\n" +
-  "Average: " + Math.round(avg) + "/100\n" +
-  "Baseline: " + (baseline !== null ? Math.round(baseline) + "/100" : "Building") + "\n" +
-  "Best: " + best + "/100\n" +
-  "Lowest: " + worst + "/100";
+    "Total tests: " + data.length + "\n" +
+    "Average: " + Math.round(avg) + "/100\n" +
+    "Baseline: " + (baseline !== null ? Math.round(baseline) + "/100" : "Building") + "\n" +
+    "Best: " + best + "/100\n" +
+    "Lowest: " + worst + "/100";
 
   let insight = "";
+  const recentBadDays = countRecentWalkingDeviations(3, 5, 10);
 
   if (baseline !== null) {
     const latest = data[data.length - 1];
-    const percentDiff = ((baseline - latest) / baseline) * 100;
+    const percentDiff = getWalkingPercentDiff(latest, baseline);
 
-    if (percentDiff <= 10) {
+    if (recentBadDays >= 3) {
+      insight = "Status: Alert (multi-day change)";
+    } else if (percentDiff <= 10) {
       insight = "Status: Stable";
     } else if (percentDiff <= 20) {
       insight = "Status: Slight change";
@@ -552,7 +624,7 @@ function updateWalkingHistory() {
   drawLineChart("walkingChart", data, "#7c3aed", baseline, "Walking Score");
 
   list.innerHTML = "";
-  const recent = [...data].reverse();
+  const recent = [...data].reverse().slice(0, 3);
 
   recent.forEach((value, index) => {
     const item = document.createElement("div");
@@ -775,4 +847,3 @@ document.addEventListener("DOMContentLoaded", function () {
   updateReactionHistory();
   updateWalkingHistory();
 });
-
